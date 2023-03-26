@@ -13,6 +13,7 @@ import torch.optim as optimizer
 import matplotlib.pyplot as plt
 import gensim
 import numpy as np
+from sklearn.metrics import balanced_accuracy_score
 
 Word  = List[float]
 Sentence = List[Word]
@@ -88,8 +89,7 @@ class WindowedParDataset(Dataset):
 def basic_collate_fn(batch):
     """Collate function for basic setting."""
     windows = [i['window'] for i in batch]
-    labels = [i['label'] for i in batch]
-    labels = torch.cat(labels)
+    labels = torch.IntTensor([i['label'] for i in batch])
 
     return windows, labels
 
@@ -106,6 +106,7 @@ class FFNN(nn.Module):
         lstm_hidden_dim: int, 
         is_bidirectional: bool, 
         window_size: int,
+        device,
         word_vec_length: int = 200
     ):
         super().__init__()
@@ -113,6 +114,8 @@ class FFNN(nn.Module):
         self.bidirec = is_bidirectional
         self.D = 2 if self.bidirec else 1
         self.lstm_hidden_size = lstm_hidden_dim
+        self.window_size = window_size
+        self.device = device
         
         self.lstm = nn.LSTM(
             word_vec_length, 
@@ -129,7 +132,7 @@ class FFNN(nn.Module):
             # l_of_seqs shape: batch length * num_words_per_seq (ragged) * 200
             input_lengths = [seq.size(0) for seq in l_of_seqs]
             padded_input = nn.utils.rnn.pad_sequence(l_of_seqs) # tensor w/ shape (max_seq_len, batch_len, 200)
-            total_length = padded_input.size(1)
+            total_length = padded_input.size(0)
             packed_input = nn.utils.rnn.pack_padded_sequence(
                 padded_input, input_lengths, batch_first=False, enforce_sorted=False
             )
@@ -143,13 +146,13 @@ class FFNN(nn.Module):
         to_be_lstmed = [sentence_embed for window in windows for sentence_embed in window]
         rnn_embeddings = lstmForward(to_be_lstmed)
         vs = torch.zeros(
-            [len(windows), self.lstm_output_dim * window_size], # num_windows * length of window vector
+            [len(windows), self.lstm_output_dim * self.window_size], # num_windows * length of window vector
             dtype=torch.float32
-        )
+        ).to(self.device)
         
-        for i, rnn_embedding in enumerate(embeddings):
-            curr_window_idx = i / window_size
-            sent_idx_in_curr_window = i % window_size
+        for i, rnn_embedding in enumerate(rnn_embeddings):
+            curr_window_idx = i // self.window_size
+            sent_idx_in_curr_window = i % self.window_size
             curr_sent_embed_start = sent_idx_in_curr_window * self.lstm_output_dim 
             curr_sent_embed_end = (sent_idx_in_curr_window + 1) * self.lstm_output_dim  
             vs[curr_window_idx][curr_sent_embed_start : curr_sent_embed_end] = rnn_embedding
@@ -164,42 +167,42 @@ class FFNN(nn.Module):
 #########################################################################
 
 def calculate_loss(scores, labels, loss_fn):
-    return loss_fn(scores, labels)
+    return loss_fn(scores, labels.float())
 
 def get_optimizer(net, lr, weight_decay):
     return optimizer.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
 
 
 def get_hyper_parameters():
+    window_size = [3]
     hidden_dim = [128, 256]
-    lr = [1e-3, 5e-4]
-    weight_decay = [0, 0.001]
+    lr = [1e-3, 1e-2, 1e-4]
+    weight_decay = [0, 0.01]
 
-    return hidden_dim, lr, weight_decay
+    return hidden_dim, lr, weight_decay, window_size
 
 
 def train_model(net, trn_loader, val_loader, optim, num_epoch=50, collect_cycle=30,
-        device='cpu', verbose=True):
+        device='cpu', verbose=True, patience=8):
     train_loss, train_loss_ind, val_loss, val_loss_ind = [], [], [], []
     num_itr = 0
     best_model, best_accuracy = None, 0
 
     loss_fn = nn.BCEWithLogitsLoss()
-    early_stopper = EarlyStopper()
+    early_stopper = EarlyStopper(patience)
     if verbose:
         print('------------------------ Start Training ------------------------')
     t_start = time.time()
     for epoch in range(num_epoch):
         # Training:
         net.train()
-        for questions, context, labels, sent_ids in trn_loader:
+        for windows, labels in trn_loader:
             num_itr += 1
-            questions = [i.to(device) for i in questions]
-            context = [i.to(device) for i in context]
+            windows = [[s.to(device) for s in window] for window in windows]
             labels = labels.to(device)
             
             optim.zero_grad()
-            output = net(questions, context)
+            output = net(windows)
             loss = calculate_loss(output, labels, loss_fn)
             loss.backward()
             optim.step()
@@ -224,7 +227,7 @@ def train_model(net, trn_loader, val_loader, optim, num_epoch=50, collect_cycle=
         if accuracy > best_accuracy:
             best_model = copy.deepcopy(net)
             best_accuracy = accuracy
-        if early_stopper.early_stop(accuracy):
+        if patience is not None and early_stopper.early_stop(accuracy):
             break
     
     t_end = time.time()
@@ -252,24 +255,23 @@ def get_validation_performance(net, loss_fn, data_loader, device):
     total_loss = [] # loss for each batch
 
     with torch.no_grad():
-        for questions, context, labels, sent_ids in data_loader:
-            questions = [i.to(device) for i in questions]
-            context = [i.to(device) for i in context]
+        for windows, labels in data_loader:
+            windows = [[s.to(device) for s in window] for window in windows]
             labels = labels.to(device)
             loss = None # loss for this batch
             pred = None # predictions for this battch
 
-            scores = net(questions, context)
+            scores = net(windows)
             loss = calculate_loss(scores, labels, loss_fn)
-            pred = torch.IntTensor(get_predictions(questions, context, scores)).to(device)
+            pred = torch.IntTensor(get_predictions(scores)).to(device)
 
             total_loss.append(loss.item())
-            y_true.append(sent_ids)
+            y_true.append(labels.cpu())
             y_pred.append(pred.cpu())
     
     y_true = torch.cat(y_true)
     y_pred = torch.cat(y_pred)
-    accuracy = (y_true == y_pred).sum() / y_pred.shape[0]
+    accuracy = balanced_accuracy_score(y_true, y_pred)
     total_loss = sum(total_loss) / len(total_loss)
     
     return accuracy, total_loss
@@ -286,18 +288,18 @@ def plot_loss(stats):
 
 class EarlyStopper:
     # Code inspired from https://stackoverflow.com/questions/71998978/early-stopping-in-pytorch u/isle_of_gods
-    def __init__(self, patience=8):
+    def __init__(self, patience=20):
         self.patience = patience
-        self.iters_since_last_inc = 0
-        self.max_acc = -float("inf")
+        self.iters_since_last_dec = 0
+        self.min_loss = float("inf")
 
-    def early_stop(self, curr_val_acc):
-        if curr_val_acc >= self.max_acc:
-            self.max_acc = curr_val_acc
-            self.iters_since_last_inc = 0
-        elif curr_val_acc < self.max_acc:
-            self.iters_since_last_inc += 1
-            if self.iters_since_last_inc >= self.patience:
+    def early_stop(self, curr_loss):
+        if curr_loss < self.min_loss:
+            self.min_loss = curr_loss
+            self.iters_since_last_dec = 0
+        elif curr_loss >= self.min_loss:
+            self.iters_since_last_dec += 1
+            if self.iters_since_last_dec >= self.patience:
                 return True
         return False
 
