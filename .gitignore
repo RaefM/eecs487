@@ -2,3 +2,5 @@
 *.xlsx
 *.zip
 .ipynb_checkpoints/
+vectors.*
+__pycache__/
