@@ -117,7 +117,7 @@ class FFNN(nn.Module):
         self.window_size = window_size
         self.device = device
         
-        self.lstm = nn.LSTM(
+        self.lstm = nn.GRU(
             word_vec_length, 
             self.lstm_hidden_size, 
             batch_first=False, 
@@ -128,7 +128,7 @@ class FFNN(nn.Module):
         self.output = nn.Linear(ffnn_hidden_dim, 1)
     
     def forward(self, windows: List[ParagraphTensor]):
-        def lstmForward(l_of_seqs):
+        def rnnForward(l_of_seqs):
             # l_of_seqs shape: batch length * num_words_per_seq (ragged) * 200
             input_lengths = [seq.size(0) for seq in l_of_seqs]
             padded_input = nn.utils.rnn.pad_sequence(l_of_seqs) # tensor w/ shape (max_seq_len, batch_len, 200)
@@ -143,8 +143,8 @@ class FFNN(nn.Module):
             # compute max pooling along the time dimension to collapse into a single lstm_hidden_dim vector
             return torch.max(output, dim=0).values
 
-        to_be_lstmed = [sentence_embed for window in windows for sentence_embed in window]
-        rnn_embeddings = lstmForward(to_be_lstmed)
+        to_be_rnned = [sentence_embed for window in windows for sentence_embed in window]
+        rnn_embeddings = rnnForward(to_be_rnned)
         vs = torch.zeros(
             [len(windows), self.lstm_output_dim * self.window_size], # num_windows * length of window vector
             dtype=torch.float32
@@ -174,22 +174,22 @@ def get_optimizer(net, lr, weight_decay):
 
 
 def get_hyper_parameters():
-    window_size = [3]
-    hidden_dim = [128, 256]
-    lr = [1e-3, 1e-2, 1e-4]
-    weight_decay = [0, 0.01]
+    window_size = [3, 5, 7]
+    hidden_dim = [200]
+    lr = [1e-3, 1e-4]
+    weight_decay = [0.01, 0.1, 0.25, 0.5, 1.0, 1.25, 2.0, 2.5, 5.0]
 
     return hidden_dim, lr, weight_decay, window_size
 
 
 def train_model(net, trn_loader, val_loader, optim, num_epoch=50, collect_cycle=30,
-        device='cpu', verbose=True, patience=8):
+        device='cpu', verbose=True, patience=8, stopping_criteria='loss'):
     train_loss, train_loss_ind, val_loss, val_loss_ind = [], [], [], []
     num_itr = 0
     best_model, best_accuracy = None, 0
 
     loss_fn = nn.BCEWithLogitsLoss()
-    early_stopper = EarlyStopper(patience)
+    early_stopper = EarlyStopperLoss(patience) if stopping_criteria == 'loss' else EarlyStopperAcc(patience)
     if verbose:
         print('------------------------ Start Training ------------------------')
     t_start = time.time()
@@ -227,7 +227,9 @@ def train_model(net, trn_loader, val_loader, optim, num_epoch=50, collect_cycle=
         if accuracy > best_accuracy:
             best_model = copy.deepcopy(net)
             best_accuracy = accuracy
-        if patience is not None and early_stopper.early_stop(accuracy):
+        if patience is not None and early_stopper.early_stop(
+            loss if stopping_criteria == 'loss' else accuracy
+        ):
             break
     
     t_end = time.time()
@@ -286,9 +288,32 @@ def plot_loss(stats):
     plt.ylabel('Loss')
     plt.show()
 
-class EarlyStopper:
+class EarlyStopperAcc:
+    def __init__(self, patience=5):
+        self.patience = patience
+        self.iters_below = 0
+        self.iters_staying_same = 0
+        self.max_acc = -float("inf")
+
+    def early_stop(self, curr_acc):
+        if curr_acc > self.max_acc:
+            self.max_acc = curr_acc
+            self.iters_below = 0
+            self.iters_staying_same = 0
+        elif curr_acc == self.max_acc:
+            self.iters_staying_same += 1
+            if self.iters_staying_same >= self.patience * 10:
+                return True
+        elif curr_loss < self.min_loss:
+            self.iters_below += 1
+            self.iters_staying_same += 1
+            if self.iters_below >= self.patience or self.iters_staying_same >= self.patience * 10:
+                return True
+        return False
+
+class EarlyStopperLoss:
     # Code inspired from https://stackoverflow.com/questions/71998978/early-stopping-in-pytorch u/isle_of_gods
-    def __init__(self, patience=20):
+    def __init__(self, patience=10):
         self.patience = patience
         self.iters_since_last_dec = 0
         self.min_loss = float("inf")
