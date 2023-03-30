@@ -175,9 +175,9 @@ def get_optimizer(net, lr, weight_decay):
 
 def get_hyper_parameters():
     window_size = [3, 5, 7]
-    hidden_dim = [200]
-    lr = [1e-3, 1e-4]
-    weight_decay = [0.01, 0.1, 0.25, 0.5, 1.0, 1.25, 2.0, 2.5, 5.0]
+    hidden_dim = [1200]
+    lr = [3e-3, 3e-4]
+    weight_decay = [0.01, 0.1, 0.5, 1.0, 1.25, 2.5]
 
     return hidden_dim, lr, weight_decay, window_size
 
@@ -247,7 +247,8 @@ def train_model(net, trn_loader, val_loader, optim, num_epoch=50, collect_cycle=
 
 
 def get_predictions(scores: torch.Tensor):
-    return torch.IntTensor([1 if score > 0 else 0 for score in scores])
+    probs = torch.sigmoid(scores)
+    return torch.IntTensor([1 if prob > 0.5 else 0 for prob in probs])
 
 
 def get_validation_performance(net, loss_fn, data_loader, device):
