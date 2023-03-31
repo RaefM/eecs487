@@ -70,6 +70,9 @@ class WindowedParDataset(Dataset):
                 elif curr_window not in coherent_windows:
                     incoherent_windows.add(curr_window)
                     
+        print(f"Number of coherent windows: {len(coherent_windows)}")
+        print(f"Number of incoherent windows: {len(incoherent_windows)}")
+                    
         coherent_windows = [tensor_of_tupled_par_embed(window) for window in coherent_windows]
         incoherent_windows = [tensor_of_tupled_par_embed(window) for window in incoherent_windows]
                     
@@ -175,10 +178,9 @@ def calculate_loss(scores, labels, loss_fn):
 def get_optimizer(net, lr, weight_decay):
     return optimizer.Adagrad(net.parameters(), lr=lr, weight_decay=weight_decay)
 
-
 def get_hyper_parameters():
     lr = [0.01]
-    weight_decay = [0.01, 0.1, 0.25, 0.5, 1.0, 1.25, 2.0, 2.5, 5.0]
+    weight_decay = [Q / 2 for Q in [0.01, 0.1, 0.25, 0.5, 1.0, 1.25, 2.0, 2.5, 5.0]]
 
     return lr, weight_decay
 
