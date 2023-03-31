@@ -49,7 +49,13 @@ class WindowedParDataset(Dataset):
         coherent_windows = set()
         incoherent_windows = set()
         
-        for i, (paragraph, is_coherent) in enumerate(zip(paragraphs, labels)):
+        # sort zip(paragraphs, labels) so the coherent ones are first, that way we never have overlap
+        def get_second(pl):
+            _, l = pl
+            return l
+        coherence_first_zip = sorted(zip(paragraphs, labels), key=get_second, reverse=True)
+        
+        for i, (paragraph, is_coherent) in enumerate(coherence_first_zip):
             sentences: Sentence = get_paragraph_embedding_tup(embed, unk, paragraph)
             num_windows: int = len(sentences) - window_size + 1
                 
@@ -170,25 +176,29 @@ def calculate_loss(scores, labels, loss_fn):
     return loss_fn(scores, labels.float())
 
 def get_optimizer(net, lr, weight_decay):
-    return optimizer.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
+    return optimizer.Adagrad(net.parameters(), lr=lr, weight_decay=weight_decay)
 
 
 def get_hyper_parameters():
-    window_size = [3, 5, 7]
-    hidden_dim = [1200]
-    lr = [3e-3, 3e-4]
-    weight_decay = [0.01, 0.1, 0.5, 1.0, 1.25, 2.5]
+    window_size = [5]
+    hidden_dim = [600, 1000]
+    lr = [0.01]
+    weight_decay = [0.01, 0.1, 0.25, 0.5, 1.0, 1.25, 2.0, 2.5, 5.0]
 
     return hidden_dim, lr, weight_decay, window_size
 
 
-def train_model(net, trn_loader, val_loader, optim, num_epoch=50, collect_cycle=30,
+def print_grads(model):
+    for name, param in model.named_parameters():
+        print(name, param.grad.norm())
+
+def train_model(net, trn_loader, val_loader, optim, pos_weight=None, num_epoch=50, collect_cycle=30,
         device='cpu', verbose=True, patience=8, stopping_criteria='loss'):
     train_loss, train_loss_ind, val_loss, val_loss_ind = [], [], [], []
     num_itr = 0
     best_model, best_accuracy = None, 0
 
-    loss_fn = nn.BCEWithLogitsLoss()
+    loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight) if pos_weight is not None else nn.BCEWithLogitsLoss()
     early_stopper = EarlyStopperLoss(patience) if stopping_criteria == 'loss' else EarlyStopperAcc(patience)
     if verbose:
         print('------------------------ Start Training ------------------------')
@@ -206,6 +216,8 @@ def train_model(net, trn_loader, val_loader, optim, num_epoch=50, collect_cycle=
             loss = calculate_loss(output, labels, loss_fn)
             loss.backward()
             optim.step()
+            
+#             print_grads(net)
             
             if num_itr % collect_cycle == 0:  # Data collection cycle
                 train_loss.append(loss.item())
