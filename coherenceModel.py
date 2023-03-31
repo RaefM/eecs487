@@ -13,7 +13,7 @@ import torch.optim as optimizer
 import matplotlib.pyplot as plt
 import gensim
 import numpy as np
-from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import balanced_accuracy_score, accuracy_score
 
 Word  = List[float]
 Sentence = List[Word]
@@ -107,31 +107,32 @@ def basic_collate_fn(batch):
 class FFNN(nn.Module):
     """Basic feedforward neural network"""
     def __init__(
-        self, 
-        ffnn_hidden_dim: int, 
-        lstm_hidden_dim: int, 
-        is_bidirectional: bool, 
+        self,
         window_size: int,
-        device,
-        word_vec_length: int = 200
+        device
     ):
         super().__init__()
-        
-        self.bidirec = is_bidirectional
-        self.D = 2 if self.bidirec else 1
-        self.lstm_hidden_size = lstm_hidden_dim
+        word_vec_length = 50
+        ffnn_hidden_dim = 100
+        self.lstm_hidden_size = word_vec_length
         self.window_size = window_size
         self.device = device
         
-        self.lstm = nn.GRU(
+        self.lstm = nn.RNN(
             word_vec_length, 
             self.lstm_hidden_size, 
             batch_first=False, 
-            bidirectional=self.bidirec
+            bidirectional=False,
         )
-        self.lstm_output_dim = self.lstm_hidden_size * self.D
+        self.lstm_output_dim = self.lstm_hidden_size
         self.fc1 = nn.Linear(self.lstm_output_dim * window_size, ffnn_hidden_dim)
         self.output = nn.Linear(ffnn_hidden_dim, 1)
+        
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.uniform_(self.lstm.all_weights[0][0], -0.2, 0.2)
+        nn.init.uniform_(self.lstm.all_weights[0][1], -0.2, 0.2)
+        nn.init.uniform_(self.lstm.all_weights[0][2], -0.2, 0.2)
+        nn.init.uniform_(self.lstm.all_weights[0][3], -0.2, 0.2)
     
     def forward(self, windows: List[ParagraphTensor]):
         def rnnForward(l_of_seqs):
@@ -142,12 +143,8 @@ class FFNN(nn.Module):
             packed_input = nn.utils.rnn.pack_padded_sequence(
                 padded_input, input_lengths, batch_first=False, enforce_sorted=False
             )
-            packed_output, _ = self.lstm(packed_input) # shape (max_seq_len, batch_len, lstm_hidden_dim)
-            output, _ = nn.utils.rnn.pad_packed_sequence(
-                packed_output, batch_first=False, total_length=total_length
-            )
-            # compute max pooling along the time dimension to collapse into a single lstm_hidden_dim vector
-            return torch.max(output, dim=0).values
+            _, hn = self.lstm(packed_input) # shape (max_seq_len, batch_len, lstm_hidden_dim)
+            return hn[0]
 
         to_be_rnned = [sentence_embed for window in windows for sentence_embed in window]
         rnn_embeddings = rnnForward(to_be_rnned)
@@ -163,7 +160,7 @@ class FFNN(nn.Module):
             curr_sent_embed_end = (sent_idx_in_curr_window + 1) * self.lstm_output_dim  
             vs[curr_window_idx][curr_sent_embed_start : curr_sent_embed_end] = rnn_embedding
         
-        vs = F.relu(self.fc1(vs))
+        vs = F.tanh(self.fc1(vs))
         output = torch.transpose(self.output(vs), dim0=0, dim1=1)[0]
         return output
 
@@ -180,12 +177,10 @@ def get_optimizer(net, lr, weight_decay):
 
 
 def get_hyper_parameters():
-    window_size = [5]
-    hidden_dim = [600, 1000]
     lr = [0.01]
     weight_decay = [0.01, 0.1, 0.25, 0.5, 1.0, 1.25, 2.0, 2.5, 5.0]
 
-    return hidden_dim, lr, weight_decay, window_size
+    return lr, weight_decay
 
 
 def print_grads(model):
@@ -196,7 +191,7 @@ def train_model(net, trn_loader, val_loader, optim, pos_weight=None, num_epoch=5
         device='cpu', verbose=True, patience=8, stopping_criteria='loss'):
     train_loss, train_loss_ind, val_loss, val_loss_ind = [], [], [], []
     num_itr = 0
-    best_model, best_accuracy = None, 0
+    best_model, best_uar = None, 0
 
     loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight) if pos_weight is not None else nn.BCEWithLogitsLoss()
     early_stopper = EarlyStopperLoss(patience) if stopping_criteria == 'loss' else EarlyStopperAcc(patience)
@@ -230,17 +225,18 @@ def train_model(net, trn_loader, val_loader, optim, pos_weight=None, num_epoch=5
                 ))
 
         # Validation:
-        accuracy, loss = get_validation_performance(net, loss_fn, val_loader, device)
+        uar, accuracy, loss = get_validation_performance(net, loss_fn, val_loader, device)
         val_loss.append(loss)
         val_loss_ind.append(num_itr)
         if verbose:
+            print("Validation UAR: {:.4f}".format(uar))
             print("Validation accuracy: {:.4f}".format(accuracy))
             print("Validation loss: {:.4f}".format(loss))
-        if accuracy > best_accuracy:
+        if uar > best_uar:
             best_model = copy.deepcopy(net)
-            best_accuracy = accuracy
+            best_uar = uar
         if patience is not None and early_stopper.early_stop(
-            loss if stopping_criteria == 'loss' else accuracy
+            loss if stopping_criteria == 'loss' else uar
         ):
             break
     
@@ -252,7 +248,7 @@ def train_model(net, trn_loader, val_loader, optim, pos_weight=None, num_epoch=5
              'train_loss_ind': train_loss_ind,
              'val_loss': val_loss,
              'val_loss_ind': val_loss_ind,
-             'accuracy': best_accuracy,
+             'accuracy': best_uar,
     }
 
     return best_model, stats
@@ -286,10 +282,11 @@ def get_validation_performance(net, loss_fn, data_loader, device):
     
     y_true = torch.cat(y_true)
     y_pred = torch.cat(y_pred)
-    accuracy = balanced_accuracy_score(y_true, y_pred)
+    uar = balanced_accuracy_score(y_true, y_pred)
+    accuracy = accuracy_score(y_true, y_pred)
     total_loss = sum(total_loss) / len(total_loss)
     
-    return accuracy, total_loss
+    return uar, accuracy, total_loss
 
 
 def plot_loss(stats):
@@ -315,12 +312,12 @@ class EarlyStopperAcc:
             self.iters_staying_same = 0
         elif curr_acc == self.max_acc:
             self.iters_staying_same += 1
-            if self.iters_staying_same >= self.patience * 10:
+            if self.iters_staying_same >= 50:
                 return True
-        elif curr_loss < self.min_loss:
+        elif curr_acc < self.max_acc:
             self.iters_below += 1
             self.iters_staying_same += 1
-            if self.iters_below >= self.patience or self.iters_staying_same >= self.patience * 10:
+            if self.iters_below >= self.patience or self.iters_staying_same >= 50:
                 return True
         return False
 
