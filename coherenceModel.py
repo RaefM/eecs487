@@ -24,7 +24,7 @@ def get_word_embedding_tup(embed, unk_rep, word: str):
     return tuple(embed[word] if word in embed.key_to_index else unk_rep)
 
 def get_sentence_embedding_tup(embed, unk_rep, sentence):
-    return tuple(get_word_embedding_tup(embed, unk_rep, word) for word in word_tokenize(sentence))
+    return tuple(get_word_embedding_tup(embed, unk_rep, word.lower()) for word in word_tokenize(sentence))
 
 def get_paragraph_embedding_tup(embed, unk_rep, paragraph):
     return tuple(get_sentence_embedding_tup(embed, unk_rep, sentence) for sentence in sent_tokenize(paragraph))
@@ -121,7 +121,7 @@ class FFNN(nn.Module):
         self.window_size = window_size
         self.device = device
         
-        self.lstm = nn.RNN(
+        self.lstm = nn.GRU(
             word_vec_length, 
             self.lstm_hidden_size, 
             batch_first=False, 
@@ -132,10 +132,11 @@ class FFNN(nn.Module):
         self.output = nn.Linear(ffnn_hidden_dim, 1)
         
         nn.init.xavier_uniform_(self.fc1.weight)
-        nn.init.uniform_(self.lstm.all_weights[0][0], -0.2, 0.2)
-        nn.init.uniform_(self.lstm.all_weights[0][1], -0.2, 0.2)
-        nn.init.uniform_(self.lstm.all_weights[0][2], -0.2, 0.2)
-        nn.init.uniform_(self.lstm.all_weights[0][3], -0.2, 0.2)
+        
+        for layer_p in self.lstm._all_weights:
+            for p in layer_p:
+                if 'weight' in p:
+                    nn.init.uniform_(self.lstm.__getattr__(p), -0.2, 0.2)
     
     def forward(self, windows: List[ParagraphTensor]):
         def rnnForward(l_of_seqs):
@@ -180,7 +181,7 @@ def get_optimizer(net, lr, weight_decay):
 
 def get_hyper_parameters():
     lr = [0.01]
-    weight_decay = [Q / 2 for Q in [0.01, 0.1, 0.25, 0.5, 1.0, 1.25, 2.0, 2.5, 5.0]]
+    weight_decay = [Q / 50 for Q in [0.01, 0.1, 0.25, 0.5]]
 
     return lr, weight_decay
 
