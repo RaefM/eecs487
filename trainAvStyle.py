@@ -4,11 +4,14 @@ import itertools
 import torch
 import sys
 from tqdm.notebook import tqdm
-from coherenceModelNews import *
+from coherenceModel import *
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
 def main():
+    if len(sys.argv) != 3:
+        print("Usage: python3 trainAvStyle.py <csvWithIds> <outputPtFile>")
+
     print("READING DATA")
     paragraph_df = pd.read_csv(sys.argv[1])
 
@@ -24,7 +27,7 @@ def main():
     print(y_train[0])
 
     print("DOWNLOADING GloVe")
-    embed = gensim.downloader.load("glove-wiki-gigaword-100")
+    embed = gensim.downloader.load("glove-wiki-gigaword-50")
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
@@ -55,7 +58,7 @@ def main():
         best_accuracy, best_lr, best_wd, best_window_size = 0, 0, 0, 0
         for lr, wd, window_size in tqdm(itertools.product(learning_rate, weight_decay, window_sizes),
                               total=len(learning_rate) * len(weight_decay) * len(window_sizes)):
-            net = FFNN(window_size, True, device).to(device)
+            net = FFNN(window_size, device).to(device)
             optim = get_optimizer(net, lr=lr, weight_decay=wd)
             model, stats = train_model(net, train_loader, dev_loader, optim, pos_weight=pos_weight, 
                                       num_epoch=100, collect_cycle=500, device=device, 
@@ -67,7 +70,7 @@ def main():
                 best_accuracy = stats['accuracy']
                 best_model, best_stats = model, stats
                 best_lr, best_wd, best_window_size = lr, wd, window_size
-                torch.save(best_model.state_dict(), 'best_rnn_wsj.pt')
+                torch.save(best_model.state_dict(), sys.argv[2])
         print("\n\nBest learning rate: {}, best weight_decay: {}, best window: {}".format(
             best_lr, best_wd, best_window_size))
         print("Accuracy: {:.4f}".format(best_accuracy))
@@ -83,7 +86,7 @@ def main():
         test_loader, 
         device
     )
-    print("Final selection: window size 5 with Q = 0.0002")
+    print("Final selection:")
     print("Test UAR: {:.4f}".format(uar))
     print("Test accuracy: {:.4f}".format(accuracy))
     print("Test loss: {:.4f}".format(total_loss))

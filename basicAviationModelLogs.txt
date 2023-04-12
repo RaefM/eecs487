@@ -1,0 +1,638 @@
+[maroofr@gl1009 ~]$ source env/bin/activate
+(env) [maroofr@gl1009 ~]$ cd eecs487/
+(env) [maroofr@gl1009 eecs487]$ mn /home/maroofr/Downloads/aviationPermsWithId.csv .
+-bash: mn: command not found
+(env) [maroofr@gl1009 eecs487]$ mv /home/maroofr/Downloads/aviationPermsWithId.csv .
+(env) [maroofr@gl1009 eecs487]$ python3 trainLA.py aviationPermsWithId.csv 
+READING DATA
+The preflight inspection of the fuel tanks by the pilot revealed the tanks were filled to the bottom of the filler neck, which the pilot believed was appropriately full. After starting the engine, fuel began leaking from the fuel sump drain hose. The pilot operated the spring loaded valve handle inside the airplane which apparently stopped the leak. Shortly after departing, the engine began running rough upon which the pilot began a deviation to another airport. During this time, the engine began running smoothly whereupon the pilot continued to his initial destination. During descent, the engine began running rough and the pilot decided the tanks had been exhausted. The pilot performed a forced landing causing substantial damage. The airplane cruising endurance based on 75% power and 90 gallons of fuel on board is 5.4 hours. However, the usable fuel capacity on this airplane when the fuel tanks are filled to the bottom of the filler necks is approximately 80 gallons. The actual flight time of this aircraft was 5.55 hours. A Federal Aviation Administration inspector who examined the airplane noted only residual fuel was found in the selector valve and no leaks were found in the fuel system.
+1
+DOWNLOADING GloVe
+cuda
+MAKING DATASETS
+^CTraceback (most recent call last):
+  File "trainLA.py", line 93, in <module>
+    main()
+  File "trainLA.py", line 37, in main
+    train_data = WindowedParDataset(X_train, y_train, embed, wsize)
+  File "/home/maroofr/eecs487/coherenceModelNews.py", line 60, in __init__
+    self.windows.append(tensor_of_tupled_par_embed(sentences[i:i+window_size]))
+  File "/home/maroofr/eecs487/coherenceModelNews.py", line 42, in tensor_of_tupled_par_embed
+    return [torch.FloatTensor(listify_sentence_embedding(sentence)) for sentence in par_embed]
+  File "/home/maroofr/eecs487/coherenceModelNews.py", line 42, in <listcomp>
+    return [torch.FloatTensor(listify_sentence_embedding(sentence)) for sentence in par_embed]
+KeyboardInterrupt
+(env) [maroofr@gl1009 eecs487]$ nano trainLA.py 
+(env) [maroofr@gl1009 eecs487]$ cp trainLA.py trainAv.py
+(env) [maroofr@gl1009 eecs487]$ ls
+aviationPerms.csv        best_rnn_wsj.pt        LATimesWashPostPerms.csv  pipeUtil.py             trainAv.py                     wsjPerms.csv
+aviationPermsWithId.csv  coherenceModelNews.py  moreAviationPerms.csv     __pycache__             trainCoherenceModel.ipynb
+best_rnn_latimes.pt      coherenceModel.py      permuteParagraphs.ipynb   README.md               trainCoherenceModelNews.ipynb
+best_rnn.pt              generateWSJ.ipynb      permuteParsWithId.ipynb   scoreRedditPosts.ipynb  trainLA.py
+(env) [maroofr@gl1009 eecs487]$ nano trainAv.py 
+(env) [maroofr@gl1009 eecs487]$ python3 trainAv.py aviationPermsWithId.csv 
+READING DATA
+The preflight inspection of the fuel tanks by the pilot revealed the tanks were filled to the bottom of the filler neck, which the pilot believed was appropriately full. After starting the engine, fuel began leaking from the fuel sump drain hose. The pilot operated the spring loaded valve handle inside the airplane which apparently stopped the leak. Shortly after departing, the engine began running rough upon which the pilot began a deviation to another airport. During this time, the engine began running smoothly whereupon the pilot continued to his initial destination. During descent, the engine began running rough and the pilot decided the tanks had been exhausted. The pilot performed a forced landing causing substantial damage. The airplane cruising endurance based on 75% power and 90 gallons of fuel on board is 5.4 hours. However, the usable fuel capacity on this airplane when the fuel tanks are filled to the bottom of the filler necks is approximately 80 gallons. The actual flight time of this aircraft was 5.55 hours. A Federal Aviation Administration inspector who examined the airplane noted only residual fuel was found in the selector valve and no leaks were found in the fuel system.
+1
+DOWNLOADING GloVe
+^CTraceback (most recent call last):
+  File "trainAv.py", line 93, in <module>
+    main()
+  File "trainAv.py", line 27, in main
+    embed = gensim.downloader.load("glove-wiki-gigaword-100")
+  File "/home/maroofr/env/lib64/python3.6/site-packages/gensim/downloader.py", line 503, in load
+    return module.load_data()
+  File "/home/maroofr/gensim-data/glove-wiki-gigaword-100/__init__.py", line 8, in load_data
+    model = KeyedVectors.load_word2vec_format(path)
+  File "/home/maroofr/env/lib64/python3.6/site-packages/gensim/models/keyedvectors.py", line 1725, in load_word2vec_format
+    limit=limit, datatype=datatype, no_header=no_header,
+  File "/home/maroofr/env/lib64/python3.6/site-packages/gensim/models/keyedvectors.py", line 2073, in _load_word2vec_format
+    _word2vec_read_text(fin, kv, counts, vocab_size, vector_size, datatype, unicode_errors, encoding)
+  File "/home/maroofr/env/lib64/python3.6/site-packages/gensim/models/keyedvectors.py", line 1979, in _word2vec_read_text
+    _add_word_to_kv(kv, counts, word, weights, vocab_size)
+KeyboardInterrupt
+(env) [maroofr@gl1009 eecs487]$ nano trainAv.py 
+(env) [maroofr@gl1009 eecs487]$ nano coherenceModel.py 
+(env) [maroofr@gl1009 eecs487]$ nano trainAv.py 
+(env) [maroofr@gl1009 eecs487]$ python3 trainAv.py aviationPermsWithId.csv 
+READING DATA
+The preflight inspection of the fuel tanks by the pilot revealed the tanks were filled to the bottom of the filler neck, which the pilot believed was appropriately full. After starting the engine, fuel began leaking from the fuel sump drain hose. The pilot operated the spring loaded valve handle inside the airplane which apparently stopped the leak. Shortly after departing, the engine began running rough upon which the pilot began a deviation to another airport. During this time, the engine began running smoothly whereupon the pilot continued to his initial destination. During descent, the engine began running rough and the pilot decided the tanks had been exhausted. The pilot performed a forced landing causing substantial damage. The airplane cruising endurance based on 75% power and 90 gallons of fuel on board is 5.4 hours. However, the usable fuel capacity on this airplane when the fuel tanks are filled to the bottom of the filler necks is approximately 80 gallons. The actual flight time of this aircraft was 5.55 hours. A Federal Aviation Administration inspector who examined the airplane noted only residual fuel was found in the selector valve and no leaks were found in the fuel system.
+1
+DOWNLOADING GloVe
+cuda
+MAKING DATASETS
+Number of coherent windows: 9787
+Number of incoherent windows: 199749
+Number of coherent windows: 2510
+Number of incoherent windows: 50180
+Number of coherent windows: 1393
+Number of incoherent windows: 27943
+BEGINNING TO TRAIN MODEL
+learning rate from: [0.01]
+weight_decay from: [0.0002, 0.002, 0.005, 0.01]
+window from: [5]
+  0%|                                                                                                                             | 0/4 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "trainAv.py", line 93, in <module>
+    main()
+  File "trainAv.py", line 76, in main
+    basic_model = search_param_utterance(wsize)
+  File "trainAv.py", line 58, in search_param_utterance
+    net = FFNN(window_size, True, device).to(device)
+TypeError: __init__() takes 3 positional arguments but 4 were given
+(env) [maroofr@gl1009 eecs487]$ nano trainAv.py 
+(env) [maroofr@gl1009 eecs487]$ python3 trainAv.py aviationPermsWithId.csv 
+READING DATA
+The preflight inspection of the fuel tanks by the pilot revealed the tanks were filled to the bottom of the filler neck, which the pilot believed was appropriately full. After starting the engine, fuel began leaking from the fuel sump drain hose. The pilot operated the spring loaded valve handle inside the airplane which apparently stopped the leak. Shortly after departing, the engine began running rough upon which the pilot began a deviation to another airport. During this time, the engine began running smoothly whereupon the pilot continued to his initial destination. During descent, the engine began running rough and the pilot decided the tanks had been exhausted. The pilot performed a forced landing causing substantial damage. The airplane cruising endurance based on 75% power and 90 gallons of fuel on board is 5.4 hours. However, the usable fuel capacity on this airplane when the fuel tanks are filled to the bottom of the filler necks is approximately 80 gallons. The actual flight time of this aircraft was 5.55 hours. A Federal Aviation Administration inspector who examined the airplane noted only residual fuel was found in the selector valve and no leaks were found in the fuel system.
+1
+DOWNLOADING GloVe
+[==================================================] 100.0% 66.0/66.0MB downloaded
+cuda
+MAKING DATASETS
+Number of coherent windows: 9787
+Number of incoherent windows: 199749
+Number of coherent windows: 2510
+Number of incoherent windows: 50180
+Number of coherent windows: 1393
+Number of incoherent windows: 27943
+BEGINNING TO TRAIN MODEL
+learning rate from: [0.01]
+weight_decay from: [0.0002, 0.002, 0.005, 0.01]
+window from: [5]
+  0%|                                                                                                                             | 0/4 [00:00<?, ?it/s]------------------------ Start Training ------------------------
+/home/maroofr/env/lib64/python3.6/site-packages/torch/nn/functional.py:1795: UserWarning: nn.functional.tanh is deprecated. Use torch.tanh instead.
+  warnings.warn("nn.functional.tanh is deprecated. Use torch.tanh instead.")
+Epoch No. 1--Iteration No. 8382-- batch loss = 0.6007
+Validation UAR: 0.6710
+Validation accuracy: 0.5719
+Validation loss: 1.1627
+/home/maroofr/env/lib64/python3.6/site-packages/torch/nn/functional.py:1795: UserWarning: nn.functional.tanh is deprecated. Use torch.tanh instead.
+  warnings.warn("nn.functional.tanh is deprecated. Use torch.tanh instead.")
+Epoch No. 2--Iteration No. 16764-- batch loss = 0.9991
+Validation UAR: 0.7010
+Validation accuracy: 0.6370
+Validation loss: 1.1004
+/home/maroofr/env/lib64/python3.6/site-packages/torch/nn/functional.py:1795: UserWarning: nn.functional.tanh is deprecated. Use torch.tanh instead.
+  warnings.warn("nn.functional.tanh is deprecated. Use torch.tanh instead.")
+Epoch No. 3--Iteration No. 25146-- batch loss = 0.6074
+Validation UAR: 0.7076
+Validation accuracy: 0.6752
+Validation loss: 1.0824
+/home/maroofr/env/lib64/python3.6/site-packages/torch/nn/functional.py:1795: UserWarning: nn.functional.tanh is deprecated. Use torch.tanh instead.
+  warnings.warn("nn.functional.tanh is deprecated. Use torch.tanh instead.")
+  0%|                                                                                                                             | 0/4 [06:05<?, ?it/s]
+Traceback (most recent call last):
+  File "trainAv.py", line 93, in <module>
+    main()
+  File "trainAv.py", line 76, in main
+    basic_model = search_param_utterance(wsize)
+  File "trainAv.py", line 62, in search_param_utterance
+    verbose=True, patience=5, stopping_criteria='accuracy')
+  File "/home/maroofr/eecs487/coherenceModel.py", line 209, in train_model
+    windows = [[s.to(device) for s in window] for window in windows]
+  File "/home/maroofr/eecs487/coherenceModel.py", line 209, in <listcomp>
+    windows = [[s.to(device) for s in window] for window in windows]
+  File "/home/maroofr/eecs487/coherenceModel.py", line 209, in <listcomp>
+    windows = [[s.to(device) for s in window] for window in windows]
+KeyboardInterrupt
+(env) [maroofr@gl1009 eecs487]$ nano coherenceModel.py 
+(env) [maroofr@gl1009 eecs487]$ python3 trainAv.py aviationPermsWithId.csv 
+READING DATA
+The preflight inspection of the fuel tanks by the pilot revealed the tanks were filled to the bottom of the filler neck, which the pilot believed was appropriately full. After starting the engine, fuel began leaking from the fuel sump drain hose. The pilot operated the spring loaded valve handle inside the airplane which apparently stopped the leak. Shortly after departing, the engine began running rough upon which the pilot began a deviation to another airport. During this time, the engine began running smoothly whereupon the pilot continued to his initial destination. During descent, the engine began running rough and the pilot decided the tanks had been exhausted. The pilot performed a forced landing causing substantial damage. The airplane cruising endurance based on 75% power and 90 gallons of fuel on board is 5.4 hours. However, the usable fuel capacity on this airplane when the fuel tanks are filled to the bottom of the filler necks is approximately 80 gallons. The actual flight time of this aircraft was 5.55 hours. A Federal Aviation Administration inspector who examined the airplane noted only residual fuel was found in the selector valve and no leaks were found in the fuel system.
+1
+DOWNLOADING GloVe
+cuda
+MAKING DATASETS
+Number of coherent windows: 9787
+Number of incoherent windows: 199749
+Number of coherent windows: 2510
+Number of incoherent windows: 50180
+Number of coherent windows: 1393
+Number of incoherent windows: 27943
+BEGINNING TO TRAIN MODEL
+learning rate from: [0.01]
+weight_decay from: [0.0002, 0.002, 0.005, 0.01]
+window from: [5]
+  0%|                                                                                                                             | 0/4 [00:00<?, ?it/s]------------------------ Start Training ------------------------
+Epoch No. 1--Iteration No. 8382-- batch loss = 1.2400
+Validation UAR: 0.6824
+Validation accuracy: 0.5822
+Validation loss: 1.1446
+Epoch No. 2--Iteration No. 16764-- batch loss = 0.3325
+Validation UAR: 0.7041
+Validation accuracy: 0.6602
+Validation loss: 1.0927
+Epoch No. 3--Iteration No. 25146-- batch loss = 0.6566
+Validation UAR: 0.7187
+Validation accuracy: 0.6604
+Validation loss: 1.0607
+Epoch No. 4--Iteration No. 33528-- batch loss = 0.6189
+Validation UAR: 0.7248
+Validation accuracy: 0.7163
+Validation loss: 1.0309
+Epoch No. 5--Iteration No. 41910-- batch loss = 0.6380
+Validation UAR: 0.7384
+Validation accuracy: 0.7183
+Validation loss: 1.0044
+Epoch No. 6--Iteration No. 50292-- batch loss = 1.9953
+Validation UAR: 0.7441
+Validation accuracy: 0.7526
+Validation loss: 0.9916
+Epoch No. 7--Iteration No. 58674-- batch loss = 0.4426
+Validation UAR: 0.7440
+Validation accuracy: 0.7017
+Validation loss: 0.9789
+Epoch No. 8--Iteration No. 67056-- batch loss = 0.2282
+Validation UAR: 0.7531
+Validation accuracy: 0.7301
+Validation loss: 0.9586
+Epoch No. 9--Iteration No. 75438-- batch loss = 0.4071
+Validation UAR: 0.7586
+Validation accuracy: 0.7319
+Validation loss: 0.9452
+Epoch No. 10--Iteration No. 83820-- batch loss = 2.3535
+Validation UAR: 0.7579
+Validation accuracy: 0.7202
+Validation loss: 0.9433
+Epoch No. 11--Iteration No. 92202-- batch loss = 0.5055
+Validation UAR: 0.7563
+Validation accuracy: 0.7269
+Validation loss: 0.9420
+Epoch No. 12--Iteration No. 100584-- batch loss = 0.2332
+Validation UAR: 0.7667
+Validation accuracy: 0.7398
+Validation loss: 0.9234
+Epoch No. 13--Iteration No. 108966-- batch loss = 2.7591
+Validation UAR: 0.7680
+Validation accuracy: 0.7553
+Validation loss: 0.9129
+Epoch No. 14--Iteration No. 117348-- batch loss = 1.5740
+Validation UAR: 0.7680
+Validation accuracy: 0.7487
+Validation loss: 0.9110
+Epoch No. 15--Iteration No. 125730-- batch loss = 0.2523
+Validation UAR: 0.7581
+Validation accuracy: 0.7685
+Validation loss: 0.9376
+Epoch No. 16--Iteration No. 134112-- batch loss = 0.4449
+Validation UAR: 0.7669
+Validation accuracy: 0.7629
+Validation loss: 0.9101
+Epoch No. 17--Iteration No. 142494-- batch loss = 0.6171
+Validation UAR: 0.7700
+Validation accuracy: 0.7727
+Validation loss: 0.9115
+Epoch No. 18--Iteration No. 150876-- batch loss = 0.4775
+Validation UAR: 0.7639
+Validation accuracy: 0.7955
+Validation loss: 0.9228
+Epoch No. 19--Iteration No. 159258-- batch loss = 1.4274
+Validation UAR: 0.7670
+Validation accuracy: 0.7767
+Validation loss: 0.9195
+Epoch No. 20--Iteration No. 167640-- batch loss = 0.4091
+Validation UAR: 0.7715
+Validation accuracy: 0.7414
+Validation loss: 0.9002
+Epoch No. 21--Iteration No. 176022-- batch loss = 0.3784
+Validation UAR: 0.7757
+Validation accuracy: 0.7534
+Validation loss: 0.9088
+Epoch No. 22--Iteration No. 184404-- batch loss = 0.2576
+Validation UAR: 0.7709
+Validation accuracy: 0.7680
+Validation loss: 0.9213
+Epoch No. 23--Iteration No. 192786-- batch loss = 0.1231
+Validation UAR: 0.7718
+Validation accuracy: 0.7878
+Validation loss: 0.9232
+Epoch No. 24--Iteration No. 201168-- batch loss = 0.3353
+Validation UAR: 0.7786
+Validation accuracy: 0.7690
+Validation loss: 0.9085
+Epoch No. 25--Iteration No. 209550-- batch loss = 0.1353
+Validation UAR: 0.7742
+Validation accuracy: 0.7861
+Validation loss: 0.9228
+Epoch No. 26--Iteration No. 217932-- batch loss = 0.7265
+Validation UAR: 0.7739
+Validation accuracy: 0.7651
+Validation loss: 0.9189
+Epoch No. 27--Iteration No. 226314-- batch loss = 0.4061
+Validation UAR: 0.7736
+Validation accuracy: 0.7926
+Validation loss: 0.9265
+Epoch No. 28--Iteration No. 234696-- batch loss = 0.8490
+Validation UAR: 0.7678
+Validation accuracy: 0.7780
+Validation loss: 0.9455
+Epoch No. 29--Iteration No. 243078-- batch loss = 0.8699
+Validation UAR: 0.7683
+Validation accuracy: 0.7601
+Validation loss: 0.9378
+Training lasted 56.05 minutes
+------------------------ Training Done ------------------------
+(0.01, 0.0002, 5): 0.7786091584240955
+ 25%|████████████████████████████▎                                                                                    | 1/4 [56:03<2:48:09, 3363.19s/it]------------------------ Start Training ------------------------
+Epoch No. 1--Iteration No. 8382-- batch loss = 0.5803
+Validation UAR: 0.6474
+Validation accuracy: 0.6556
+Validation loss: 1.2067
+Epoch No. 2--Iteration No. 16764-- batch loss = 0.4688
+Validation UAR: 0.6856
+Validation accuracy: 0.6297
+Validation loss: 1.1370
+Epoch No. 3--Iteration No. 25146-- batch loss = 0.3876
+Validation UAR: 0.6927
+Validation accuracy: 0.6688
+Validation loss: 1.1187
+Epoch No. 4--Iteration No. 33528-- batch loss = 0.5275
+Validation UAR: 0.7068
+Validation accuracy: 0.6592
+Validation loss: 1.0913
+Epoch No. 5--Iteration No. 41910-- batch loss = 0.6136
+Validation UAR: 0.7114
+Validation accuracy: 0.6763
+Validation loss: 1.0774
+Epoch No. 6--Iteration No. 50292-- batch loss = 0.2794
+Validation UAR: 0.7193
+Validation accuracy: 0.7206
+Validation loss: 1.0551
+Epoch No. 7--Iteration No. 58674-- batch loss = 0.3062
+Validation UAR: 0.7245
+Validation accuracy: 0.7044
+Validation loss: 1.0383
+Epoch No. 8--Iteration No. 67056-- batch loss = 0.4270
+Validation UAR: 0.7273
+Validation accuracy: 0.7281
+Validation loss: 1.0279
+Epoch No. 9--Iteration No. 75438-- batch loss = 0.9104
+Validation UAR: 0.7322
+Validation accuracy: 0.6903
+Validation loss: 1.0168
+Epoch No. 10--Iteration No. 83820-- batch loss = 0.6058
+Validation UAR: 0.7356
+Validation accuracy: 0.6762
+Validation loss: 1.0075
+Epoch No. 11--Iteration No. 92202-- batch loss = 1.1422
+Validation UAR: 0.7422
+Validation accuracy: 0.7180
+Validation loss: 0.9943
+Epoch No. 12--Iteration No. 100584-- batch loss = 0.4001
+Validation UAR: 0.7431
+Validation accuracy: 0.7312
+Validation loss: 0.9839
+Epoch No. 13--Iteration No. 108966-- batch loss = 1.1870
+Validation UAR: 0.7446
+Validation accuracy: 0.6830
+Validation loss: 0.9810
+Epoch No. 14--Iteration No. 117348-- batch loss = 1.0612
+Validation UAR: 0.7448
+Validation accuracy: 0.7272
+Validation loss: 0.9784
+Epoch No. 15--Iteration No. 125730-- batch loss = 1.2669
+Validation UAR: 0.7444
+Validation accuracy: 0.7057
+Validation loss: 0.9765
+Epoch No. 16--Iteration No. 134112-- batch loss = 1.1710
+Validation UAR: 0.7401
+Validation accuracy: 0.7053
+Validation loss: 0.9858
+Epoch No. 17--Iteration No. 142494-- batch loss = 0.7765
+Validation UAR: 0.7507
+Validation accuracy: 0.6903
+Validation loss: 0.9641
+Epoch No. 18--Iteration No. 150876-- batch loss = 0.4923
+Validation UAR: 0.7546
+Validation accuracy: 0.7164
+Validation loss: 0.9590
+Epoch No. 19--Iteration No. 159258-- batch loss = 0.3049
+Validation UAR: 0.7478
+Validation accuracy: 0.7232
+Validation loss: 0.9685
+Epoch No. 20--Iteration No. 167640-- batch loss = 0.6922
+Validation UAR: 0.7488
+Validation accuracy: 0.7241
+Validation loss: 0.9614
+Epoch No. 21--Iteration No. 176022-- batch loss = 0.5582
+Validation UAR: 0.7550
+Validation accuracy: 0.7501
+Validation loss: 0.9429
+Epoch No. 22--Iteration No. 184404-- batch loss = 0.4026
+Validation UAR: 0.7546
+Validation accuracy: 0.7432
+Validation loss: 0.9411
+Epoch No. 23--Iteration No. 192786-- batch loss = 0.6150
+Validation UAR: 0.7557
+Validation accuracy: 0.7109
+Validation loss: 0.9429
+Epoch No. 24--Iteration No. 201168-- batch loss = 0.4985
+Validation UAR: 0.7559
+Validation accuracy: 0.7164
+Validation loss: 0.9434
+Epoch No. 25--Iteration No. 209550-- batch loss = 0.7034
+Validation UAR: 0.7581
+Validation accuracy: 0.7626
+Validation loss: 0.9322
+Epoch No. 26--Iteration No. 217932-- batch loss = 0.5854
+Validation UAR: 0.7570
+Validation accuracy: 0.7587
+Validation loss: 0.9338
+Epoch No. 27--Iteration No. 226314-- batch loss = 0.3011
+Validation UAR: 0.7625
+Validation accuracy: 0.6958
+Validation loss: 0.9327
+Epoch No. 28--Iteration No. 234696-- batch loss = 0.2809
+Validation UAR: 0.7564
+Validation accuracy: 0.7454
+Validation loss: 0.9309
+Epoch No. 29--Iteration No. 243078-- batch loss = 0.5302
+Validation UAR: 0.7551
+Validation accuracy: 0.7867
+Validation loss: 0.9382
+Epoch No. 30--Iteration No. 251460-- batch loss = 1.2223
+Validation UAR: 0.7579
+Validation accuracy: 0.7454
+Validation loss: 0.9278
+Epoch No. 31--Iteration No. 259842-- batch loss = 0.3759
+Validation UAR: 0.7615
+Validation accuracy: 0.7418
+Validation loss: 0.9290
+Epoch No. 32--Iteration No. 268224-- batch loss = 0.7266
+Validation UAR: 0.7579
+Validation accuracy: 0.7181
+Validation loss: 0.9363
+Training lasted 62.10 minutes
+------------------------ Training Done ------------------------
+(0.01, 0.002, 5): 0.7625276494659068
+ 50%|███████████████████████████████████████████████████████▌                                                       | 2/4 [1:58:09<1:59:13, 3576.77s/it]------------------------ Start Training ------------------------
+Epoch No. 1--Iteration No. 8382-- batch loss = 0.5275
+Validation UAR: 0.5976
+Validation accuracy: 0.6411
+Validation loss: 1.2613
+Epoch No. 2--Iteration No. 16764-- batch loss = 0.5560
+Validation UAR: 0.6123
+Validation accuracy: 0.6331
+Validation loss: 1.2469
+Epoch No. 3--Iteration No. 25146-- batch loss = 1.5608
+Validation UAR: 0.6181
+Validation accuracy: 0.5956
+Validation loss: 1.2359
+Epoch No. 4--Iteration No. 33528-- batch loss = 1.6066
+Validation UAR: 0.6253
+Validation accuracy: 0.6417
+Validation loss: 1.2280
+Epoch No. 5--Iteration No. 41910-- batch loss = 1.7172
+Validation UAR: 0.6514
+Validation accuracy: 0.6081
+Validation loss: 1.2010
+Epoch No. 6--Iteration No. 50292-- batch loss = 0.6090
+Validation UAR: 0.6534
+Validation accuracy: 0.6537
+Validation loss: 1.1942
+Epoch No. 7--Iteration No. 58674-- batch loss = 0.6051
+Validation UAR: 0.6631
+Validation accuracy: 0.5591
+Validation loss: 1.1806
+Epoch No. 8--Iteration No. 67056-- batch loss = 2.2927
+Validation UAR: 0.6681
+Validation accuracy: 0.6674
+Validation loss: 1.1746
+Epoch No. 9--Iteration No. 75438-- batch loss = 0.4288
+Validation UAR: 0.6827
+Validation accuracy: 0.6520
+Validation loss: 1.1536
+Epoch No. 10--Iteration No. 83820-- batch loss = 0.7202
+Validation UAR: 0.6835
+Validation accuracy: 0.6249
+Validation loss: 1.1482
+Epoch No. 11--Iteration No. 92202-- batch loss = 0.7329
+Validation UAR: 0.6781
+Validation accuracy: 0.5808
+Validation loss: 1.1525
+Epoch No. 12--Iteration No. 100584-- batch loss = 0.5163
+Validation UAR: 0.6830
+Validation accuracy: 0.6619
+Validation loss: 1.1401
+Epoch No. 13--Iteration No. 108966-- batch loss = 1.4598
+Validation UAR: 0.6990
+Validation accuracy: 0.6462
+Validation loss: 1.1179
+Epoch No. 14--Iteration No. 117348-- batch loss = 0.5109
+Validation UAR: 0.6963
+Validation accuracy: 0.6671
+Validation loss: 1.1107
+Epoch No. 15--Iteration No. 125730-- batch loss = 0.5909
+Validation UAR: 0.7019
+Validation accuracy: 0.6752
+Validation loss: 1.1034
+Epoch No. 16--Iteration No. 134112-- batch loss = 0.5049
+Validation UAR: 0.7079
+Validation accuracy: 0.6866
+Validation loss: 1.0933
+Epoch No. 17--Iteration No. 142494-- batch loss = 0.5309
+Validation UAR: 0.7074
+Validation accuracy: 0.6910
+Validation loss: 1.0896
+Epoch No. 18--Iteration No. 150876-- batch loss = 1.2805
+Validation UAR: 0.7114
+Validation accuracy: 0.6879
+Validation loss: 1.0842
+Epoch No. 19--Iteration No. 159258-- batch loss = 0.6193
+Validation UAR: 0.7108
+Validation accuracy: 0.6971
+Validation loss: 1.0800
+Epoch No. 20--Iteration No. 167640-- batch loss = 0.6963
+Validation UAR: 0.7087
+Validation accuracy: 0.6812
+Validation loss: 1.0812
+Epoch No. 21--Iteration No. 176022-- batch loss = 0.6607
+Validation UAR: 0.7112
+Validation accuracy: 0.7188
+Validation loss: 1.0716
+Epoch No. 22--Iteration No. 184404-- batch loss = 3.1011
+Validation UAR: 0.7164
+Validation accuracy: 0.6642
+Validation loss: 1.0671
+Epoch No. 23--Iteration No. 192786-- batch loss = 1.5874
+Validation UAR: 0.7188
+Validation accuracy: 0.6630
+Validation loss: 1.0614
+Epoch No. 24--Iteration No. 201168-- batch loss = 0.8527
+Validation UAR: 0.7119
+Validation accuracy: 0.6316
+Validation loss: 1.0735
+Epoch No. 25--Iteration No. 209550-- batch loss = 1.6967
+Validation UAR: 0.7176
+Validation accuracy: 0.6773
+Validation loss: 1.0585
+Epoch No. 26--Iteration No. 217932-- batch loss = 1.4080
+Validation UAR: 0.7226
+Validation accuracy: 0.6699
+Validation loss: 1.0494
+Epoch No. 27--Iteration No. 226314-- batch loss = 0.6882
+Validation UAR: 0.7282
+Validation accuracy: 0.6899
+Validation loss: 1.0421
+Epoch No. 28--Iteration No. 234696-- batch loss = 1.0768
+Validation UAR: 0.7287
+Validation accuracy: 0.6765
+Validation loss: 1.0413
+Epoch No. 29--Iteration No. 243078-- batch loss = 1.1031
+Validation UAR: 0.7237
+Validation accuracy: 0.7033
+Validation loss: 1.0428
+Epoch No. 30--Iteration No. 251460-- batch loss = 0.4314
+Validation UAR: 0.7185
+Validation accuracy: 0.6928
+Validation loss: 1.0510
+Epoch No. 31--Iteration No. 259842-- batch loss = 0.3654
+Validation UAR: 0.7282
+Validation accuracy: 0.7079
+Validation loss: 1.0348
+Epoch No. 32--Iteration No. 268224-- batch loss = 1.0823
+Validation UAR: 0.7277
+Validation accuracy: 0.6969
+Validation loss: 1.0316
+Epoch No. 33--Iteration No. 276606-- batch loss = 0.5567
+Validation UAR: 0.7242
+Validation accuracy: 0.6999
+Validation loss: 1.0403
+Training lasted 64.16 minutes
+------------------------ Training Done ------------------------
+(0.01, 0.005, 5): 0.7287193196127408
+ 75%|███████████████████████████████████████████████████████████████████████████████████▎                           | 3/4 [3:02:18<1:01:41, 3701.26s/it]------------------------ Start Training ------------------------
+Epoch No. 1--Iteration No. 8382-- batch loss = 0.6874
+Validation UAR: 0.5884
+Validation accuracy: 0.5527
+Validation loss: 1.2651
+Epoch No. 2--Iteration No. 16764-- batch loss = 1.7114
+Validation UAR: 0.5953
+Validation accuracy: 0.6223
+Validation loss: 1.2605
+Epoch No. 3--Iteration No. 25146-- batch loss = 0.7508
+Validation UAR: 0.5977
+Validation accuracy: 0.6082
+Validation loss: 1.2584
+Epoch No. 4--Iteration No. 33528-- batch loss = 1.9604
+Validation UAR: 0.5996
+Validation accuracy: 0.5552
+Validation loss: 1.2578
+Epoch No. 5--Iteration No. 41910-- batch loss = 1.4460
+Validation UAR: 0.6021
+Validation accuracy: 0.5806
+Validation loss: 1.2557
+Epoch No. 6--Iteration No. 50292-- batch loss = 2.6108
+Validation UAR: 0.6021
+Validation accuracy: 0.5924
+Validation loss: 1.2551
+Epoch No. 7--Iteration No. 58674-- batch loss = 2.4203
+Validation UAR: 0.6044
+Validation accuracy: 0.5609
+Validation loss: 1.2540
+Epoch No. 8--Iteration No. 67056-- batch loss = 2.0658
+Validation UAR: 0.6051
+Validation accuracy: 0.5503
+Validation loss: 1.2538
+Epoch No. 9--Iteration No. 75438-- batch loss = 0.7448
+Validation UAR: 0.6063
+Validation accuracy: 0.5633
+Validation loss: 1.2532
+Epoch No. 10--Iteration No. 83820-- batch loss = 5.1306
+Validation UAR: 0.6040
+Validation accuracy: 0.5597
+Validation loss: 1.2522
+Epoch No. 11--Iteration No. 92202-- batch loss = 1.8208
+Validation UAR: 0.6047
+Validation accuracy: 0.5719
+Validation loss: 1.2508
+Epoch No. 12--Iteration No. 100584-- batch loss = 2.0795
+Validation UAR: 0.6059
+Validation accuracy: 0.5893
+Validation loss: 1.2504
+Epoch No. 13--Iteration No. 108966-- batch loss = 0.5677
+Validation UAR: 0.6057
+Validation accuracy: 0.5767
+Validation loss: 1.2519
+Epoch No. 14--Iteration No. 117348-- batch loss = 3.5414
+Validation UAR: 0.6089
+Validation accuracy: 0.6080
+Validation loss: 1.2496
+Epoch No. 15--Iteration No. 125730-- batch loss = 0.6683
+Validation UAR: 0.6081
+Validation accuracy: 0.5919
+Validation loss: 1.2508
+Epoch No. 16--Iteration No. 134112-- batch loss = 2.9049
+Validation UAR: 0.6064
+Validation accuracy: 0.5762
+Validation loss: 1.2499
+Epoch No. 17--Iteration No. 142494-- batch loss = 1.9464
+Validation UAR: 0.6058
+Validation accuracy: 0.5696
+Validation loss: 1.2498
+Epoch No. 18--Iteration No. 150876-- batch loss = 0.6577
+Validation UAR: 0.6062
+Validation accuracy: 0.5757
+Validation loss: 1.2487
+Epoch No. 19--Iteration No. 159258-- batch loss = 2.1173
+Validation UAR: 0.6064
+Validation accuracy: 0.6288
+Validation loss: 1.2505
+Training lasted 36.95 minutes
+------------------------ Training Done ------------------------
+(0.01, 0.01, 5): 0.6089358389479149
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [3:39:15<00:00, 3288.99s/it]
+
+
+Best learning rate: 0.01, best weight_decay: 0.0002, best window: 5
+Accuracy: 0.7786
+/home/maroofr/eecs487/coherenceModel.py:302: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+TESTING FINAL MODEL
+/home/maroofr/env/lib64/python3.6/site-packages/torch/nn/modules/rnn.py:853: UserWarning: RNN module weights are not part of single contiguous chunk of memory. This means they need to be compacted at every call, possibly greatly increasing memory usage. To compact weights again call flatten_parameters(). (Triggered internally at  ../aten/src/ATen/native/cudnn/RNN.cpp:925.)
+  self.num_layers, self.dropout, self.training, self.bidirectional)
+Final selection:
+Test UAR: 0.7829
+Test accuracy: 0.7851
+Test loss: 0.9334
+(env) [maroofr@gl1009 eecs487]$ 

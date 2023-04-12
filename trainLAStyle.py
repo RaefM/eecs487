@@ -9,6 +9,9 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
 def main():
+    if len(sys.argv) != 3:
+        print("Usage: python3 trainLAStyle.py <csv> <output pt file>")
+
     print("READING DATA")
     paragraph_df = pd.read_csv(sys.argv[1])
 
@@ -67,7 +70,7 @@ def main():
                 best_accuracy = stats['accuracy']
                 best_model, best_stats = model, stats
                 best_lr, best_wd, best_window_size = lr, wd, window_size
-                torch.save(best_model.state_dict(), 'best_rnn_wsj.pt')
+                torch.save(best_model.state_dict(), sys.argv[2])
         print("\n\nBest learning rate: {}, best weight_decay: {}, best window: {}".format(
             best_lr, best_wd, best_window_size))
         print("Accuracy: {:.4f}".format(best_accuracy))
@@ -83,7 +86,7 @@ def main():
         test_loader, 
         device
     )
-    print("Final selection: window size 5 with Q = 0.0002")
+    print("Final selection:")
     print("Test UAR: {:.4f}".format(uar))
     print("Test accuracy: {:.4f}".format(accuracy))
     print("Test loss: {:.4f}".format(total_loss))
