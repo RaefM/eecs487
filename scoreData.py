@@ -115,6 +115,6 @@ def main():
     unk = np.mean(embed.vectors, axis=0)
 
     dataset['coherence'] = compute_coherence(model, dataset, device, embed, unk)
-    dataset.to_csv(dataset_type + 'WithCoherence.csv')
+    dataset.to_csv(dataset_type + 'WithCoherenceBy' + model_type + '.csv')
 
 
