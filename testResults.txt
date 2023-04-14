@@ -1,0 +1,45 @@
+Aviation Complex:
+Test UAR: 0.8012
+Test accuracy: 0.7888
+Test loss: 0.8873
+
+LA Times:
+Test UAR: 0.6378
+Test accuracy: 0.4073
+Test loss: 1.1546
+
+WSJ:
+Test UAR: 0.6866
+Test accuracy: 0.6108
+Test loss: 1.0870
+
+
+We originally hypothesized that corpuses of differing formality and style may arbitrarily be assigned a lower coherence score-
+however, this was assuming that our models would learn generalizable patterns for sentence ordering and coherence. Instead,
+it appears that these models learn a domain specific understanding of sentence ordering, whether by shortcut learning or 
+common key factors. Consequently, it seems that scores between the truly coherent and incoherent sets fall in one of two camps-
+those it understands and can assign confident scores to, or those it doesn't understand and predicts 0.5 for
+
+Fun other tests:
+Test accuracy of WSJ model on the other datasets
+
+WSJ on Reuters
+Test UAR: 0.6638
+Test accuracy: 0.5842
+Test loss: 1.1500
+
+WSJ on LA times and Washington Post
+Final selection:
+Test UAR: 0.5927
+Test accuracy: 0.5347
+Test loss: 1.3423
+
+WSJ on Reddit
+Test UAR: 0.5210
+Test accuracy: 0.4212
+Test loss: 1.4488
+
+WSJ on Aviation
+Test UAR: 0.5072
+Test accuracy: 0.2980
+Test loss: 1.4635

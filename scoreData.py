@@ -10,10 +10,11 @@ from sklearn.metrics import balanced_accuracy_score, accuracy_score
 from coherenceModelNews import *
 
 def read_aviation():
-    return pd.read_csv('moreAviationPerms.csv')
+    return pd.read_csv('aviationPermsWithId.csv')
 
 def read_reddit():
-    return pd.read_csv('redditPerms.csv')
+    df = pd.read_csv('redditPerms.csv')
+    return df[df['num_sent'] >= 5]
 
 def read_wsj():
     return pd.read_csv('wsjPerms.csv')
@@ -41,7 +42,7 @@ def validate_args(dataset, model_type):
 def usage_warning():
     print("Usage: python3 scoreData.py <dataset> <model>")
     print("Datasets: aviation, reddit, wsj, la, reuters")
-    print("Models: aviation, la")
+    print("Models: aviation, la, wsj")
 
 def get_model(model_type, device):
     fname = ''
@@ -93,7 +94,9 @@ def compute_coherence(model, dataset, device, embed, unk):
     def get_coherence_wrapper(par): 
         return get_coherence(par, model, device, embed, unk)
     
-    return dataset.paragraph.apply(get_coherence_wrapper)
+    tqdm.pandas()
+    
+    return dataset.paragraph.astype('string').progress_apply(get_coherence_wrapper)
 
 def main():
     if len(sys.argv) != 3:
@@ -105,16 +108,19 @@ def main():
 
     validate_args(dataset_type, model_type)
 
+    print(f"Scoring {dataset_type} by using the model trained on {model_type} data")
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print(device)
 
     model = get_model(model_type, device)
     dataset = get_dataset(dataset_type)
 
-    embed = gensim.downloader.load("glove-wiki-gigaword-100")
+    embed = gensim.models.KeyedVectors.load('glove100.kv')
     unk = np.mean(embed.vectors, axis=0)
 
     dataset['coherence'] = compute_coherence(model, dataset, device, embed, unk)
     dataset.to_csv(dataset_type + 'WithCoherenceBy' + model_type + '.csv')
 
 
+if __name__ == '__main__':
+    main()
